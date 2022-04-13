@@ -107,7 +107,7 @@ for i in range(tn):
     forcelist.append(d)
     
 print('\n====================================================================')
-print('                           SUPPORT DATA                             ')
+print('                           SUPPORTS DATA                             ')
 print('====================================================================\n')
 
 #Userinput - Supported joints
