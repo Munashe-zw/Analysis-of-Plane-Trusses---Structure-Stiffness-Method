@@ -1,38 +1,46 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 10 20:27:07 2022
-
-@author: Asus ROG
-"""
-
+#Python Libraries used in the program
 import math
 import numpy
 
-numpy.set_printoptions(3, suppress=True)
+#precision and removing scientific notation on small numbers
+numpy.set_printoptions(3, suppress=True)                                          
 
-tn = int(input('Enter the total number of nodes : ')) 
-te = int(input('Enter the total number of Elements : ')) 
+print('\n====================================================================')
+print('                       ANALYTICAL DATA INPUT                      ')
+print('====================================================================\n')                                              
+# Userinput - joint and member data
+tn = int(input('Enter the total number of joints : '))                                  
+te = int(input('Enter the total number of members : '))
+print('\n')
+
+# Storing joint and member data into corresponding lists
+print('MEMBER COORDINATES DATA: \n')
 xco = [] 
 yco = [] 
 for i in range(tn):
-    x = float(input('Enter the x co-ordinate of node '+str(i+1)+' in mm : '))
-    y = float(input('Enter the y co-ordinate of node '+str(i+1)+' in mm : '))
+    x = float(input('Enter the x co-ordinate of joint '+str(i+1)+' in mm : '))
+    y = float(input('Enter the y co-ordinate of joint '+str(i+1)+' in mm : '))
+    print('\n')
     xco.append(x)
     yco.append(y)
-    
+
+#Userinput - material data
 A = float(input('Enter the Area of cross section in mm2: '))
 E = float(input('Enter the Modulous of Elasticity in N/mm2 : '))
+print('\n')
 
-startnode = [] 
-endnode = []
+start_joint  = []                                                                 
+end_joint    = []
 memberlength = []
-elcon = []
-cosofel = [] 
-sinofel = []
+elcon        = []
+cosofel      = []                                                                  
+sinofel      = []                                                                   
 
+#Userinput - member joints 
 for i in range(te):  
-    a = int(input('Enter the Start node of element '+str(i+1)+' : '))
-    b = int(input('Enter the End node of element '+str(i+1)+' : '))
+    a = int(input('Enter the Start joint of member '+str(i+1)+' : '))
+    b = int(input('Enter the End joint of member '+str(i+1)+' : '))
+    print('\n')
     x1 = float(xco[a-1])
     y1 = float(yco[a-1])
     x2 = float(xco[b-1])
@@ -42,8 +50,9 @@ for i in range(te):
     cos = (x2-x1)/l
     sin = (y2-y1)/l
     
-    startnode.append(a)
-    endnode.append(b)
+    #Storing member joint data
+    start_joint.append(a)
+    end_joint.append(b)
     memberlength.append(l)
     elcon.append(con)
     cosofel.append(cos)
@@ -51,6 +60,7 @@ for i in range(te):
     
 elstmat = []
 
+#Generation of the Structure Stiffness Matrix
 for i in range(te):
     cc = float(cosofel[i])**2
     ss = float(sinofel[i])**2
@@ -65,11 +75,9 @@ for i in range(te):
 
 gstmatmap = []                         
 for i in range(te):                     
-    m = startnode[i]*2                     
-    n = endnode[i]*2                    
-    add = [m-1, m, n-1, n]              
-                                           
-                                          
+    m = start_joint[i]*2                     
+    n = end_joint[i]*2                    
+    add = [m-1, m, n-1, n]                                                                                        
     gmat = numpy.zeros((tn*2, tn*2))    
     elmat = elstmat[i]                  
     for j in range(4):                  
@@ -83,7 +91,7 @@ GSM = numpy.zeros((tn*2, tn*2))
 for mat in gstmatmap:
     GSM = GSM+mat                      
 
-print('\nGlobal Stiffness Matrix of the Truss\n')
+print('\nGLOBAL STIFFNESS MATRIX OF THE TRUSS\n')
 print(numpy.around(GSM, 3))
 
 displist = []
@@ -98,16 +106,20 @@ for i in range(tn):
     d = str('fy')+str(i+1)
     forcelist.append(d)
     
-print('\n________________Support Data______________\n')
+print('\n====================================================================')
+print('                           SUPPORT DATA                             ')
+print('====================================================================\n')
 
+#Userinput - Supported joints
 dispmat = numpy.ones((tn*2,1))
-tsupn = int(input('Enter the total number of nodes having supports : ')) 
+tsupn = int(input('Enter the total number of joints having supports : ')) 
 supcondition = ['P = pinned',
                 'H = Horizonally restrained',
                 'V = Vertically restrained ']
    
 for i in range(tsupn):
-    supn = int(input('\nEnter the node number of support : '))
+    supn = int(input('\nEnter the joint number of support : '))
+    print('\n')
     for a in supcondition:
         print(a)
     condition = str(input('\nEnter the condition of the support : '))
@@ -121,23 +133,27 @@ for i in range(tsupn):
     else:
         print('Please enter valid entries')
 
-
-print('\n_________________Loading____________________\n')
+print('\n====================================================================')
+print('                           JOINT LOADS                             ')
+print('====================================================================\n')
+# Userinput - Loaded joints
 forcemat = numpy.zeros((tn*2,1))
-tlon = int(input('Enter the total number of loaded nodes : ')) 
+tlon = int(input('Enter the total number of loaded joints : ')) 
 
 for i in range(tlon):
-    lon = int(input('\nEnter the node number of Loading : ')) 
-    fx = float(input('Enter the Horizontal load at this node in N : '))
-    fy = float(input('Enter the Vertical load at this node in N : '))
+    lon = int(input('\nEnter the joint number of Loading : ')) 
+    fx = float(input('Enter the Horizontal load at this joint in N : '))
+    fy = float(input('Enter the Vertical load at this joint in N : '))
     forcemat[lon*2-2, 0] = fx
     forcemat[lon*2-1, 0] = fy
 
+#Storing Loading Data
 rcdlist = []
 for i in range(tn*2):
     if dispmat[i,0] == 0:
         rcdlist.append(i)
 
+#House keeping and code refactoring
 rrgsm = numpy.delete(GSM, rcdlist, 0)              
 crgsm = numpy.delete(rrgsm, rcdlist, 1)            
 rgsm = crgsm                                       
@@ -153,14 +169,20 @@ for i in range(tn*2):
 
 forceresult = numpy.matmul(GSM, dispmat)
 
-
-print('\n\nGlobal Stiffness Matrix\n')
+print('\n====================================================================')
+print('                           RESULTS OF ANALYSIS                     ')
+print('====================================================================\n')
+#Display Solutions
+print('\nGLOBAL STIFFNIESS MATRIX (S):\n')
 print(GSM)
-print('\n\nNodes Displacement matrix of\n')
+
+print('\n\nJOINT DISPLACEMENT VECTOR (d) IN MM:\n')
 print(dispmat)
-print('\n\nNodes Force matrix of\n')
+
+print('\n\nMEMBER FORCE VECTOR (F) IN N:\n')
 print(forceresult)
 
+#Member force calculations
 newxco = []
 newyco = []
 count = 0
@@ -174,7 +196,7 @@ for i in range(tn):
     
 newmemberlength = []
 for i in range(te):
-    a, b = startnode[i], endnode[i]
+    a, b = start_joint[i], end_joint[i]
     x1 = float(newxco[a-1])
     y1 = float(newyco[a-1])
     x2 = float(newxco[b-1])
@@ -199,5 +221,5 @@ elforce = numpy.zeros((te,1))
 for i in range(te):
     elforce[i,0] = A * elstress[i,0]
 
-print('\n\nMember Forces')
+print('\n\nMEMBER LOCAL FORCES (Q) IN N:\n')
 print(elforce)
