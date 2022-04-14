@@ -25,6 +25,7 @@ for i in range(tn):
     yco.append(y)
 
 #Userinput - material data
+print('MATERIAL PROPERTY DATA:')
 A = float(input('Enter the Area of cross section in mm2: '))
 E = float(input('Enter the Modulous of Elasticity in N/mm2 : '))
 print('\n')
